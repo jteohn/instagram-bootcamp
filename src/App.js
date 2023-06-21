@@ -14,6 +14,8 @@ class App extends React.Component {
     // When Firebase changes, update local state, which will update local UI
     this.state = {
       messages: [],
+      text: "",
+      // timestamp: "",
     };
   }
 
@@ -21,6 +23,7 @@ class App extends React.Component {
     const messagesRef = ref(database, DB_MESSAGES_KEY);
     // onChildAdded will return data for every child at the reference and every subsequent new child
     onChildAdded(messagesRef, (data) => {
+      console.log(data);
       // Add the subsequent child to local component state, initialising a new array to trigger re-render
       this.setState((state) => ({
         // Store message key so we can use it as a key in our list items when rendering messages
@@ -33,22 +36,39 @@ class App extends React.Component {
   writeData = () => {
     const messageListRef = ref(database, DB_MESSAGES_KEY);
     const newMessageRef = push(messageListRef);
-    set(newMessageRef, "abc");
+    set(newMessageRef, {
+      text: this.state.text,
+      date: new Date().toLocaleString("en-GB"),
+    });
+    // reset input field
+    this.setState({ text: "" });
+  };
+
+  handleChange = (event) => {
+    this.setState({
+      text: event.target.value,
+    });
   };
 
   render() {
     // Convert messages in state to message JSX elements to render
     let messageListItems = this.state.messages.map((message) => (
-      <li key={message.key}>{message.val}</li>
+      <li key={message.key}>
+        {message.val.date} - {message.val.text}
+      </li>
     ));
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          {/* TODO: Add input field and add text input as messages in Firebase */}
+          <p>instagram exercise</p>
+          <input
+            type="text"
+            name="text"
+            value={this.state.text}
+            placeholder="write message here..."
+            onChange={(event) => this.handleChange(event)}
+          />
           <button onClick={this.writeData}>Send</button>
           <ol>{messageListItems}</ol>
         </header>
